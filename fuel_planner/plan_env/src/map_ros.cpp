@@ -36,6 +36,9 @@ void MapROS::init() {
   node_.param("map_ros/show_esdf_time", show_esdf_time_, false);
   node_.param("map_ros/show_all_map", show_all_map_, false);
   node_.param("map_ros/frame_id", frame_id_, string("world"));
+  node_.param("map_ros/if_noise", if_noise_, false);
+  node_.param("map_ros/noise_mean", noise_mean_, 0.0);
+  node_.param("map_ros/noise_std", noise_std_, 0.0);
 
   proj_points_.resize(640 * 480 / (skip_pixel_ * skip_pixel_));
   point_cloud_.points.resize(640 * 480 / (skip_pixel_ * skip_pixel_));
@@ -121,14 +124,18 @@ void MapROS::updateESDFCallback(const ros::TimerEvent& /*event*/) {
 void MapROS::depthPoseCallback(const sensor_msgs::ImageConstPtr& img,
                                const geometry_msgs::PoseStampedConstPtr& pose) {
   cout << "-----------------------------------------------depth pose start------------------------------------------------" << endl;
-  camera_pos_(0) = pose->pose.position.x;
-  camera_pos_(1) = pose->pose.position.y;
-  camera_pos_(2) = pose->pose.position.z;
+  const double mean = 0.0;
+  const double stddev = 0.0;
+  std::default_random_engine generator;
+  std::normal_distribution<double> dist(mean, stddev);
+  camera_pos_(0) = pose->pose.position.x + dist(generator);
+  camera_pos_(1) = pose->pose.position.y + dist(generator);
+  camera_pos_(2) = pose->pose.position.z + dist(generator);
   if (!map_->isInMap(camera_pos_))  // exceed mapped region
     return;
 
-  camera_q_ = Eigen::Quaterniond(pose->pose.orientation.w, pose->pose.orientation.x,
-                                 pose->pose.orientation.y, pose->pose.orientation.z);
+  camera_q_ = Eigen::Quaterniond(pose->pose.orientation.w + dist(generator), pose->pose.orientation.x + dist(generator),
+                                 pose->pose.orientation.y + dist(generator), pose->pose.orientation.z+ dist(generator));
   cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(img, img->encoding);
   if (img->encoding == sensor_msgs::image_encodings::TYPE_32FC1)
     (cv_ptr->image).convertTo(cv_ptr->image, CV_16UC1, k_depth_scaling_factor_);

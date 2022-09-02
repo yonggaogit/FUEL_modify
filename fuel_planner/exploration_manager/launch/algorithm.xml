@@ -30,6 +30,9 @@
     <remap from ="/map_ros/depth" to = "$(arg depth_topic)"/>
     <remap from ="/map_ros/cloud" to="$(arg cloud_topic)"/>
 
+    <param name ="/map_ros/noise_mean" value="0.0"/>
+    <param name ="/map_ros/noise_std" value="0.02"/>
+
     <param name="sdf_map/resolution"      value="0.1" /> 
     <param name="sdf_map/map_size_x"   value="$(arg map_size_x_)" /> 
     <param name="sdf_map/map_size_y"   value="$(arg map_size_y_)" /> 

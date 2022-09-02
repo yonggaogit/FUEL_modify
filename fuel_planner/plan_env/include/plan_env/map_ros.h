@@ -81,6 +81,10 @@ private:
   bool show_esdf_time_, show_occ_time_;
   bool show_all_map_;
 
+  //
+  bool if_noise_;
+  double noise_mean_, noise_std_;
+
   // data
   // flags of map state
   bool local_updated_, esdf_need_update_;
